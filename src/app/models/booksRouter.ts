@@ -42,3 +42,27 @@ booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
         data: book
     })
 })
+
+// updated single book
+booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
+  const id = req.params.bookId;
+  const body = req.body;
+  console.log(body)
+   const book = await booksCollection.findByIdAndUpdate(id,body, {new: true})
+   res.status(201).json({
+        success: true,
+        message: "Book updated successfully",
+        data: book
+    })
+})
+booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
+  const id = req.params.bookId;
+  const body = req.body;
+  console.log(body)
+   const book = await booksCollection.findByIdAndUpdate(id,body, {new: true})
+   res.status(201).json({
+        success: true,
+        message: "Book updated successfully",
+        data: book
+    })
+})
