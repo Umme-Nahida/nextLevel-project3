@@ -31,3 +31,16 @@ booksRouters.get('/api/books', async (req: Request, res: Response) => {
         data: books
     })
 })
+
+booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
+    const id = req.params.bookId;
+    console.log(id, req.params.bookId)
+   
+   
+    const book = await booksCollection.findById(id);
+    res.json({
+        success: true,
+        message: "Book retrieved successfully",
+        data: book
+    })
+})
