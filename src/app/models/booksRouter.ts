@@ -47,7 +47,7 @@ booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
 booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
   const id = req.params.bookId;
   const body = req.body;
-  console.log(body)
+//   console.log(body)
    const book = await booksCollection.findByIdAndUpdate(id,body, {new: true})
    res.status(201).json({
         success: true,
@@ -55,7 +55,10 @@ booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
         data: book
     })
 })
-booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
+
+
+// delete single book
+booksRouters.delete('/api/books/:bookId', async(req:Request,res:Response)=>{
   const id = req.params.bookId;
   const body = req.body;
   console.log(body)
