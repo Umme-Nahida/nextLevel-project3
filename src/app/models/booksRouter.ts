@@ -8,69 +8,81 @@ export const borrowRouters = express.Router();
 
 // create a new book
 booksRouters.post('/api/books', async (req: Request, res: Response) => {
-  try{
-     const body = req.body;
-    const books = new booksCollections(body);
+    try {
+        const body = req.body;
+        const books = new booksCollections(body);
 
-    await books.save();
-    res.json({
-        success: true,
-        message: "Book created successfully",
-        data: books
-    })
-  }catch(error){
-     let errorName = 'Error';
-     if (error && typeof error === 'object' && 'name' in error) {
-        errorName = (error as { name: string }).name;
-     }
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: errorName,
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
+        await books.save();
+
+        res.json({
+            success: true,
+            message: "Book created successfully",
+            data: books
+        })
+
+
+    } catch (error) {
+
+        let errorName = 'Error';
+
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+
+        res.json(errorResponse)
+
+    }
 
 })
 
 // get all books
 booksRouters.get('/api/books', async (req: Request, res: Response) => {
-   try{
+    try {
 
-    const { filter, sortBy, sort, limit } = req.query;
+        const { filter, sortBy, sort, limit } = req.query;
 
-    let books = [];
+        let books = [];
 
-    if (filter || sortBy || sort || limit) {
-        books = await booksCollections.find({ genre: filter }).sort({ [sortBy as string]: sort === 'desc' ? -1 : 1 }).limit(Number(limit));
+        if (filter || sortBy || sort || limit) {
+            books = await booksCollections.find({ genre: filter }).sort({ [sortBy as string]: sort === 'desc' ? -1 : 1 }).limit(Number(limit));
 
-    } else {
-        books = await booksCollections.find();
+        } else {
+            books = await booksCollections.find();
+        }
+
+        res.json({
+            success: true,
+            message: "Books retrieved successfully",
+            data: books
+        })
+
+
+    } catch (error) {
+        let errorName = 'Error';
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+        res.json(errorResponse)
     }
-
-    res.json({
-        success: true,
-        message: "Books retrieved successfully",
-        data: books
-    })
-
-
-   }catch(error){
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: (error && typeof error === 'object' && 'name' in error) ? (error as { name: string }).name : 'Error',
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
 
 
 })
@@ -78,28 +90,35 @@ booksRouters.get('/api/books', async (req: Request, res: Response) => {
 
 // get signle book by id
 booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
-   try{
-     const id = req.params.bookId;
+    try {
+        const id = req.params.bookId;
 
-    const book = await booksCollections.findById(id);
-    res.json({
-        success: true,
-        message: "Book retrieved successfully",
-        data: book
-    })
+        const book = await booksCollections.findById(id);
+        res.json({
+            success: true,
+            message: "Book retrieved successfully",
+            data: book
+        })
 
-   }catch(error){
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: (error && typeof error === 'object' && 'name' in error) ? (error as { name: string }).name : 'Error',
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
+    } catch (error) {
+
+        let errorName = 'Error';
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+
+        res.json(errorResponse)
+    }
 
 
 })
@@ -107,30 +126,35 @@ booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
 
 // updated single book
 booksRouters.put('/api/books/:bookId', async (req: Request, res: Response) => {
-    try{
-      const id = req.params.bookId;
-    const body = req.body;
-    //   console.log(body)
-    const book = await booksCollections.findByIdAndUpdate(id, body, { new: true })
-    res.status(201).json({
-        success: true,
-        message: "Book updated successfully",
-        data: book
-    })
+    try {
+        const id = req.params.bookId;
+        const body = req.body;
+        //   console.log(body)
+        const book = await booksCollections.findByIdAndUpdate(id, body, { new: true })
+        res.status(201).json({
+            success: true,
+            message: "Book updated successfully",
+            data: book
+        })
 
-    }catch(error){
+    } catch (error) {
 
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: error.name,
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
+        let errorName = 'Error';
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+        res.json(errorResponse)
+    }
 
 })
 
@@ -146,19 +170,24 @@ booksRouters.delete('/api/books/:bookId', async (req: Request, res: Response) =>
             message: "Book deleted successfully",
             data: null
         })
-    }catch(error){
+    } catch (error) {
 
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: error.name,
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
+        let errorName = 'Error';
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+        res.json(errorResponse)
+    }
 })
 
 borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
@@ -192,19 +221,24 @@ borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
             message: "Book borrowed successfully",
             data: borrowBook
         });
-    } catch(error){
+    } catch (error) {
 
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: error.name,
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
+        let errorName = 'Error';
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+        res.json(errorResponse)
+    }
 });
 
 
@@ -243,19 +277,24 @@ borrowRouters.get('/api/borrow', async (req: Request, res: Response) => {
         });
 
 
-    }catch(error){
+    } catch (error) {
 
-     const errorResponse = {
-      message: 'Something went wrong',
-      success: false,
-      error: {
-        name: error.name,
-        errors: error
-        
-      }
-    };
-    res.json(errorResponse)
-  }
+        let errorName = 'Error';
+        if (error && typeof error === 'object' && 'name' in error) {
+            errorName = (error as { name: string }).name;
+        }
+
+        const errorResponse = {
+            message: 'Something went wrong',
+            success: false,
+            error: {
+                name: errorName,
+                errors: error
+
+            }
+        };
+        res.json(errorResponse)
+    }
 })
 
 
