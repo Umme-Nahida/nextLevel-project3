@@ -207,7 +207,7 @@ borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
 
         singleBook.copies -= quantity;
 
-        if (singleBook.copies === 0 && singleBook.available != false) {
+        if (singleBook.copies === 0 && singleBook.available !== false) {
             singleBook.available = false;
             await singleBook.save()
         }
