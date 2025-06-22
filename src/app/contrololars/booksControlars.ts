@@ -15,7 +15,7 @@ import { bookInterface } from "../interfaces/booksInterface";
 const booksSchema = new Schema<bookInterface>({
    title: {type: String, required: true},
    author: {type: String, required:true},
-   genre: {type: String, required: true, enum: ['FICTION', 'NON_FICTION', 'SCIENCE', 'HISTORY', 'BIOGRAPHY', 'FANTASY']},
+   genre: {type: String, required: true, enum: {values:['FICTION', 'NON_FICTION', 'SCIENCE', 'HISTORY', 'BIOGRAPHY', 'FANTASY'], message:"{VALUE} is not valid "}},
    isbn: {type: String, required: true, unique: true},
    description: {type: String, required: false},
    copies: {type: Number, required: true, min: 0},
@@ -23,5 +23,5 @@ const booksSchema = new Schema<bookInterface>({
 }, 
 { versionKey: false, timestamps: true})
 
-export const booksCollection = mongoose.model('booksCollection', booksSchema);
+export const booksCollections = mongoose.model('booksCollections', booksSchema);
 
