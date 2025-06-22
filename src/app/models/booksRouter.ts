@@ -1,16 +1,15 @@
 import express, { Request, Response } from 'express';
-import app from '../../app';
-import { booksCollection } from '../contrololars/booksControlars';
+import { borrowCollection } from '../contrololars/borrowControlar';
+import { booksCollections } from '../contrololars/booksControlars';
 
 export const booksRouters = express.Router();
+export const borrowRouters = express.Router();
 
-booksRouters.get('/', (req: Request, res: Response) => {
-    res.send('this is the books route')
-})
 
+// create a new book
 booksRouters.post('/api/books', async (req: Request, res: Response) => {
     const body = req.body;
-    const books = new booksCollection(body);
+    const books = new booksCollections(body);
 
     await books.save();
     res.json({
@@ -20,11 +19,19 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
     })
 })
 
+// get all books
 booksRouters.get('/api/books', async (req: Request, res: Response) => {
-    const {filter, sortBy,sort,limit} = req.query;
-   
-   
-    const books = await booksCollection.find({genre: filter}).sort({[sortBy as string]: sort === 'desc' ? -1 : 1}).limit(Number(limit));
+    const { filter, sortBy, sort, limit } = req.query;
+
+    let books = [];
+
+    if (filter || sortBy || sort || limit) {
+        books = await booksCollections.find({ genre: filter }).sort({ [sortBy as string]: sort === 'desc' ? -1 : 1 }).limit(Number(limit));
+
+    } else {
+        books = await booksCollections.find();
+    }
+
     res.json({
         success: true,
         message: "Books retrieved successfully",
@@ -32,10 +39,12 @@ booksRouters.get('/api/books', async (req: Request, res: Response) => {
     })
 })
 
+
+// get signle book by id
 booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
     const id = req.params.bookId;
-   
-    const book = await booksCollection.findById(id);
+
+    const book = await booksCollections.findById(id);
     res.json({
         success: true,
         message: "Book retrieved successfully",
@@ -43,13 +52,14 @@ booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
     })
 })
 
+
 // updated single book
-booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
-  const id = req.params.bookId;
-  const body = req.body;
-//   console.log(body)
-   const book = await booksCollection.findByIdAndUpdate(id,body, {new: true})
-   res.status(201).json({
+booksRouters.put('/api/books/:bookId', async (req: Request, res: Response) => {
+    const id = req.params.bookId;
+    const body = req.body;
+    //   console.log(body)
+    const book = await booksCollections.findByIdAndUpdate(id, body, { new: true })
+    res.status(201).json({
         success: true,
         message: "Book updated successfully",
         data: book
@@ -58,14 +68,112 @@ booksRouters.put('/api/books/:bookId', async(req:Request,res:Response)=>{
 
 
 // delete single book
-booksRouters.delete('/api/books/:bookId', async(req:Request,res:Response)=>{
-  const id = req.params.bookId;
-  const body = req.body;
-  console.log(body)
-   const book = await booksCollection.findByIdAndUpdate(id,body, {new: true})
-   res.status(201).json({
-        success: true,
-        message: "Book updated successfully",
-        data: book
-    })
+booksRouters.delete('/api/books/:bookId', async (req: Request, res: Response) => {
+    try {
+        const id = req.params.bookId;
+
+        const book = await booksCollections.findByIdAndDelete(id)
+        res.status(201).json({
+            success: true,
+            message: "Book deleted successfully",
+            data: null
+        })
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "something went wrong",
+            success: false,
+            error: error
+        });
+    }
 })
+
+borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
+    try {
+        const { book, quantity, dueDate } = req.body;
+
+        const singleBook = await booksCollections.findById(book);
+
+        if (!singleBook) {
+            return res.status(404).json({ message: "Book not found" });
+        }
+
+        if (singleBook.copies < quantity) {
+            return res.status(400).json({ message: "Not enough copies available to borrow" });
+        }
+
+        singleBook.copies -= quantity;
+
+        if (singleBook.copies === 0) {
+            singleBook.available = false;
+        }
+
+        await singleBook.save();
+
+
+        const borrowBook = await borrowCollection.create({ book, quantity, dueDate });
+
+
+        res.status(201).json({
+            success: true,
+            message: "Book borrowed successfully",
+            data: borrowBook
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "something went wrong",
+            success: false,
+            error: error
+        });
+    }
+});
+
+
+borrowRouters.get('/api/borrow', async (req: Request, res: Response) => {
+    try {
+        const result = await borrowCollection.aggregate([
+            {
+                $group: { _id: "$book", totalQuantity: { $sum: "$quantity" } }
+            },
+
+            {
+                $lookup: {
+                    from: "bookscollections",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "bookInfo"
+                }
+            },
+            { $unwind: '$bookInfo' },
+            {
+                $project: {
+                    _id: 0,
+                    book: {
+                        title: "$bookInfo.title",
+                        isbn: "$bookInfo.isbn"
+                    },
+                    totalQuantity: "$totalQuantity"
+                }
+            }
+
+        ])
+        res.status(201).json({
+            success: true,
+            message: "Book borrowed successfully",
+            data: result
+        });
+
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "something went wrong",
+            success: false,
+            error: error
+        });
+    }
+})
+
+
+
