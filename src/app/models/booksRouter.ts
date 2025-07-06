@@ -48,60 +48,61 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
 
 // get all books
 booksRouters.get('/api/books', async (req: Request, res: Response) => {
-    try {
+  try {
+    // console.log("Query params:", req.query);
 
-        const { filter, sortBy, sort, limit, page } = req.query;
-        const currentPage = Number(page) || 1;
-        const pageLimit = Number(limit) || 5;
-        const skip = (currentPage - 1) * 5;
+    const { filter, sortBy, sort, limit, page } = req.query;
 
-        let query: any = {};
-        if (filter) {
-            query.genre = filter
-        }
+    const currentPage = Number(page) || 1;
+    const pageLimit = Number(limit) || 5;
+    const skip = (currentPage - 1) * pageLimit;
 
-        let books = [];
-
-        if (filter || sortBy || sort || limit) {
-            books = await booksCollections.find(query).sort({ [sortBy as string]: sort === 'desc' ? -1 : 1 }).skip(skip).limit(pageLimit)
-
-        } else {
-            books = await booksCollections.find();
-        }
-
-        const total = await booksCollections.countDocuments(query)
-
-        res.json({
-            success: true,
-            message: "Books retrieved successfully",
-            data: books,
-            meta: {
-                total,
-                page: currentPage,
-                limit: pageLimit,
-            },
-        })
-
-
-    } catch (error) {
-        let errorName = 'Error';
-        if (error && typeof error === 'object' && 'name' in error) {
-            errorName = (error as { name: string }).name;
-        }
-        const errorResponse = {
-            message: 'Something went wrong',
-            success: false,
-            error: {
-                name: errorName,
-                errors: error
-
-            }
-        };
-        res.json(errorResponse)
+    let query: any = {};
+    if (filter) {
+      query.genre = filter;
     }
 
+    let books = [];
 
-})
+    if (filter || sortBy || sort || limit) {
+      books = await booksCollections
+        .find(query)
+        .sort(sortBy ? { [sortBy as string]: sort === 'desc' ? -1 : 1 } : {})
+        .skip(skip)
+        .limit(pageLimit)
+    } else {
+      books = await booksCollections.find()
+    }
+
+    const total = await booksCollections.countDocuments(query);
+
+    res.json({
+      success: true,
+      message: 'Books retrieved successfully',
+      data: books,
+      meta: {
+        total,
+        page: currentPage,
+        limit: pageLimit,
+      },
+    });
+  } catch (error) {
+    let errorName = 'Error';
+    if (error && typeof error === 'object' && 'name' in error) {
+      errorName = (error as { name: string }).name;
+    }
+
+    res.status(500).json({
+      message: 'Something went wrong',
+      success: false,
+      error: {
+        name: errorName,
+        errors: error,
+      },
+    });
+  }
+});
+
 
 
 // get signle book by id
