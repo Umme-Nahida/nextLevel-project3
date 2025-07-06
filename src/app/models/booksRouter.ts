@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { borrowCollection } from '../contrololars/borrowControlar';
 import { booksCollections } from '../contrololars/booksControlars';
 
+
 export const booksRouters = express.Router();
 export const borrowRouters = express.Router();
 
@@ -21,7 +22,7 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
         })
 
 
-    } catch (error) {
+    } catch (error: any) {
 
         let errorName = 'Error';
 
@@ -30,7 +31,7 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
         }
 
         const errorResponse = {
-            message: 'Something went wrong',
+            message: error?.errors?.title?.message || error?.errors?.errorResponse?.message || 'something went wrong',
             success: false,
             error: {
                 name: errorName,
@@ -49,21 +50,36 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
 booksRouters.get('/api/books', async (req: Request, res: Response) => {
     try {
 
-        const { filter, sortBy, sort, limit } = req.query;
+        const { filter, sortBy, sort, limit, page } = req.query;
+        const currentPage = Number(page) || 1;
+        const pageLimit = Number(limit) || 5;
+        const skip = (currentPage - 1) * 5;
+
+        let query: any = {};
+        if (filter) {
+            query.genre = filter
+        }
 
         let books = [];
 
         if (filter || sortBy || sort || limit) {
-            books = await booksCollections.find({ genre: filter }).sort({ [sortBy as string]: sort === 'desc' ? -1 : 1 }).limit(Number(limit));
+            books = await booksCollections.find(query).sort({ [sortBy as string]: sort === 'desc' ? -1 : 1 }).skip(skip).limit(pageLimit)
 
         } else {
             books = await booksCollections.find();
         }
 
+        const total = await booksCollections.countDocuments(query)
+
         res.json({
             success: true,
             message: "Books retrieved successfully",
-            data: books
+            data: books,
+            meta: {
+                total,
+                page: currentPage,
+                limit: pageLimit,
+            },
         })
 
 
