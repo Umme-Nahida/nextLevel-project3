@@ -6,7 +6,7 @@ const app: Application = express()
 
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:5173','https://assignment4-delta-seven.vercel.app/']
+  origin: ['http://localhost:5173','https://assignment4-delta-seven.vercel.app']
 }))
 
 app.use('/', booksRouters)

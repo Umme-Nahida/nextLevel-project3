@@ -49,7 +49,8 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
 // get all books
 booksRouters.get('/api/books', async (req: Request, res: Response) => {
   try {
-    // console.log("Query params:", req.query);
+    console.log("Query params:", req.query);
+   
 
     const { filter, sortBy, sort, limit, page } = req.query;
 
@@ -62,9 +63,13 @@ booksRouters.get('/api/books', async (req: Request, res: Response) => {
       query.genre = filter;
     }
 
+    console.log('currentPage',currentPage)
+    console.log('limit',pageLimit)
+    console.log('skip',skip)
+    console.log('query',query)
     let books = [];
 
-    if (filter || sortBy || sort || limit) {
+    if (filter || sortBy || sort || currentPage || pageLimit) {
       books = await booksCollections
         .find(query)
         .sort(sortBy ? { [sortBy as string]: sort === 'desc' ? -1 : 1 } : {})
