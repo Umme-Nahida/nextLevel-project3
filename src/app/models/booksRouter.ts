@@ -15,7 +15,7 @@ booksRouters.post('/api/books', async (req: Request, res: Response) => {
 
         await books.save();
 
-        res.json({
+        res.status(201).json({
             success: true,
             message: "Book created successfully",
             data: books
@@ -81,7 +81,7 @@ booksRouters.get('/api/books', async (req: Request, res: Response) => {
 
     const total = await booksCollections.countDocuments(query);
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: 'Books retrieved successfully',
       data: books,
@@ -97,7 +97,7 @@ booksRouters.get('/api/books', async (req: Request, res: Response) => {
       errorName = (error as { name: string }).name;
     }
 
-    res.status(500).json({
+    res.status(404).json({
       message: 'Something went wrong',
       success: false,
       error: {
@@ -116,7 +116,7 @@ booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
         const id = req.params.bookId;
 
         const book = await booksCollections.findById(id);
-        res.json({
+        res.status(200).json({
             success: true,
             message: "Book retrieved successfully",
             data: book
@@ -139,7 +139,7 @@ booksRouters.get('/api/books/:bookId', async (req: Request, res: Response) => {
             }
         };
 
-        res.json(errorResponse)
+        res.status(404).json(errorResponse)
     }
 
 
@@ -153,7 +153,7 @@ booksRouters.put('/api/books/:bookId', async (req: Request, res: Response) => {
         const body = req.body;
         //   console.log(body)
         const book = await booksCollections.findByIdAndUpdate(id, body, { new: true })
-        res.status(201).json({
+        res.status(200).json({
             success: true,
             message: "Book updated successfully",
             data: book
@@ -175,7 +175,7 @@ booksRouters.put('/api/books/:bookId', async (req: Request, res: Response) => {
 
             }
         };
-        res.json(errorResponse)
+        res.status(404).json(errorResponse)
     }
 
 })
@@ -187,7 +187,7 @@ booksRouters.delete('/api/books/:bookId', async (req: Request, res: Response) =>
         const id = req.params.bookId;
 
         const book = await booksCollections.findByIdAndDelete(id)
-        res.status(201).json({
+        res.status(200).json({
             success: true,
             message: "Book deleted successfully",
             data: null
@@ -208,7 +208,7 @@ booksRouters.delete('/api/books/:bookId', async (req: Request, res: Response) =>
 
             }
         };
-        res.json(errorResponse)
+        res.status(404).json(errorResponse)
     }
 })
 
@@ -294,7 +294,7 @@ borrowRouters.get('/api/borrow', async (req: Request, res: Response) => {
             }
 
         ])
-        res.status(201).json({
+        res.status(200).json({
             success: true,
             message: "Book borrowed successfully",
             data: result
