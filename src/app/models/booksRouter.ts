@@ -1,10 +1,10 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import { borrowCollection } from '../contrololars/borrowControlar';
 import { booksCollections } from '../contrololars/booksControlars';
 
 
-export const booksRouters = express.Router();
-export const borrowRouters = express.Router();
+export const booksRouters = Router();
+export const borrowRouters = Router();
 
 
 // create a new book
@@ -213,32 +213,87 @@ booksRouters.delete('/api/books/:bookId', async (req: Request, res: Response) =>
 })
 
 
-borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
+// borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
+//     try {
+//         const { book, quantity, dueDate } = req.body;
+
+//         const singleBook = await booksCollections.findById(book);
+
+//         if (!singleBook) {
+//             return res.status(404).json({ message: "Book not found" });
+//         }
+
+//         if (singleBook.copies < quantity) {
+//             return res.status(400).json({ message: "Not enough copies available to borrow" });
+//         }
+
+//         singleBook.copies -= quantity;
+
+//         if (singleBook.copies === 0 && singleBook.available !== false) {
+//             singleBook.available = false;
+//             await singleBook.save()
+//         }
+
+//         await singleBook.save();
+
+
+//         const borrowBook = await borrowCollection.create({ book, quantity, dueDate });
+
+
+//         res.status(201).json({
+//             success: true,
+//             message: "Book borrowed successfully",
+//             data: borrowBook
+//         });
+//     } catch (error) {
+
+//         let errorName = 'Error';
+//         if (error && typeof error === 'object' && 'name' in error) {
+//             errorName = (error as { name: string }).name;
+//         }
+
+//         const errorResponse = {
+//             message: 'Something went wrong',
+//             success: false,
+//             error: {
+//                 name: errorName,
+//                 errors: error
+
+//             }
+//         };
+//         res.json(errorResponse)
+//     }
+// });
+
+borrowRouters.post('/api/borrow', async (req: Request, res: Response): Promise<void> => {
     try {
         const { book, quantity, dueDate } = req.body;
 
         const singleBook = await booksCollections.findById(book);
 
         if (!singleBook) {
-            return res.status(404).json({ message: "Book not found" });
+            res.status(404).json({ message: "Book not found" });
+            return;
         }
 
         if (singleBook.copies < quantity) {
-            return res.status(400).json({ message: "Not enough copies available to borrow" });
+            res.status(400).json({ message: "Not enough copies available" });
+            return;
         }
 
         singleBook.copies -= quantity;
 
-        if (singleBook.copies === 0 && singleBook.available !== false) {
+        if (singleBook.copies === 0) {
             singleBook.available = false;
-            await singleBook.save()
         }
 
         await singleBook.save();
 
-
-        const borrowBook = await borrowCollection.create({ book, quantity, dueDate });
-
+        const borrowBook = await borrowCollection.create({
+            book,
+            quantity,
+            dueDate
+        });
 
         res.status(201).json({
             success: true,
@@ -246,24 +301,14 @@ borrowRouters.post('/api/borrow', async (req: Request, res: Response) => {
             data: borrowBook
         });
     } catch (error) {
-
-        let errorName = 'Error';
-        if (error && typeof error === 'object' && 'name' in error) {
-            errorName = (error as { name: string }).name;
-        }
-
-        const errorResponse = {
-            message: 'Something went wrong',
+        res.status(500).json({
             success: false,
-            error: {
-                name: errorName,
-                errors: error
-
-            }
-        };
-        res.json(errorResponse)
+            message: "Something went wrong",
+            error
+        });
     }
 });
+
 
 
 borrowRouters.get('/api/borrow', async (req: Request, res: Response) => {
